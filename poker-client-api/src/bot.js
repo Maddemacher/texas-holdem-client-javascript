@@ -168,7 +168,6 @@ const setupPossibleActions = (possibleActions) => {
  *
  * In addition to this the bot can access all of the events by listening to them. Furthermore,
  * the bot can at any time access the game state by invoking @see {getGameState}.
- * @param {string} name The name of your marvelous poker bot.
  */
 export const createBot = ({ name }) => {
     const { gameState, gameStateEmitter } = setupGameState({ name });

@@ -70,7 +70,9 @@ export const createDeck = (cardsToSkip, shuffle = true) => {
     return deck;
 };
 
-const isPartOfHand = (hand, card) => hand.find((c) => isSameCard(c, card));
+export const isPartOfHand = (hand, card) => hand.find((c) => isSameCard(c, card));
+
+export const isPartOfHandRank = (hand, card) => hand.find((c) => isSameRank(c, card));
 
 /**
  * Checks if two hands are identical.

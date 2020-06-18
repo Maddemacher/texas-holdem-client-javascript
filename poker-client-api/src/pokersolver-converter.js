@@ -100,4 +100,4 @@ const toTexasCard = (solverCard) => {
 const toSolverHand = (texasHand) => texasHand.map(toSolverCard);
 const toTexasHand = (solverHand) => solverHand.map(toTexasCard);
 
-export { toSolverCard, toTexasCard, toSolverHand, toTexasHand };
+export { toSolverCard, toTexasCard, toSolverHand, toTexasHand, toSolverRank };

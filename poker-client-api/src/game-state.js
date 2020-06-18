@@ -1,5 +1,5 @@
 import emitters from 'events';
-import { events } from './protocol.js';
+import { events, actions } from './protocol.js';
 
 const sortPlayersByChipCount = (players) => {
     return players
@@ -59,10 +59,21 @@ export const setupGameState = ({ name }) => {
         p.potInvestment = p.potInvestment + amount;
     };
 
+    const setLastActionToPlayer = (name, action) => {
+        const p = getTablePlayer(name);
+        if (!p) {
+            console.error('*** error, addPotInvestmentToPlayer(): no player by name ' + name);
+            return;
+        }
+        p.lastAction = action;
+    };
+
     const gameStateEmitter = new emitters.EventEmitter();
 
     gameStateEmitter.on(events.CommunityHasBeenDealtACardEvent, (event) => {
         playerState.communityCards.push(event.card);
+
+        gameState.getTablePlayers().map((p) => setLastActionToPlayer(p.name, undefined));
     });
 
     gameStateEmitter.on(events.PlayerBetBigBlindEvent, (event) => {
@@ -75,6 +86,8 @@ export const setupGameState = ({ name }) => {
 
     gameStateEmitter.on(events.PlayerCalledEvent, (event) => {
         addPotInvestmentToPlayer(event.player.name, event.callBet);
+        setLastActionToPlayer(event.player.name, actions.call);
+
         if (event.player.chipCount === 0) {
             getTablePlayer(event.player.name).allIn = true;
         }
@@ -82,6 +95,8 @@ export const setupGameState = ({ name }) => {
 
     gameStateEmitter.on(events.PlayerRaisedEvent, (event) => {
         addPotInvestmentToPlayer(event.player.name, event.raiseBet);
+        setLastActionToPlayer(event.player.name, actions.raise);
+
         if (event.player.chipCount === 0) {
             getTablePlayer(event.player.name).allIn = true;
         }
@@ -90,10 +105,12 @@ export const setupGameState = ({ name }) => {
     gameStateEmitter.on(events.PlayerWentAllInEvent, (event) => {
         addPotInvestmentToPlayer(event.player.name, event.allInAmount);
         getTablePlayer(event.player.name).allIn = true;
+        setLastActionToPlayer(event.player.name, actions.allIn);
     });
 
     gameStateEmitter.on(events.PlayerFoldedEvent, (event) => {
         getTablePlayer(event.player.name).folded = true;
+        setLastActionToPlayer(event.player.name, actions.fold);
     });
 
     gameStateEmitter.on(events.PlayerForcedFoldedEvent, (event) => {
@@ -242,6 +259,10 @@ export const setupGameState = ({ name }) => {
          * @returns {boolean} true if your bot is the current dealer
          */
         amIDealerPlayer: () => playerState.table.dealer.name === getMyPlayerName(),
+
+        getDealer: () => playerState.table.dealer.name,
+
+        getBigBlindPlayer: () => playerState.table.bigBlindPlayer,
 
         /**
          * @returns {boolean} true if your bot has the small bline
